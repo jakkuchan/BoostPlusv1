@@ -2,12 +2,11 @@
    $json = file_get_contents('php://input');
    $obj = json_decode($json);
    
-   $usr = "a9334981_admin";
-   $pwd = "hope123";
-
-   $db = "a9334981_hope";
-
-   $host = "mysql8.000webhost.com";
+   // Database configuration
+   $usr = "";
+   $pwd = "";
+   $db = "";
+   $host = "";
 
    $cid = mysql_connect($host,$usr,$pwd);
 
