@@ -9,7 +9,7 @@ import android.speech.tts.TextToSpeech.OnInitListener;
 import com.work.games.common.NetworkManager;
 import com.work.games.webservice.WebServiceTask;
 
-public class HopeGenerator implements OnInitListener{
+public class HopeGenerator implements OnInitListener {
 	private Context mContext;
 	private TextToSpeech mTalker;	
 	private Text mMessageText;
@@ -35,15 +35,16 @@ public class HopeGenerator implements OnInitListener{
 	
 	public void close() {
 		mTalker.shutdown();
-		mWst.cancel(true);
+		if(mWst != null)
+			mWst.cancel(true);
 	}
 
 	public Context getContext() {
 		return this.mContext;
 	}
 	
-	public void getHope() {
-		this.mWst = new WebServiceTask(this);
+	public void getHope(String sentiment) {
+		this.mWst = new WebServiceTask(this, sentiment);
 
 		if(mNetMgr.isNetworkAvailable()) {
 			mWst.execute();

@@ -10,38 +10,55 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.andengine.util.debug.Debug;
 import org.apache.http.client.*;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import com.work.games.common.CommonClass;
 import com.work.games.hopeplus.HopeGenerator;
 
-import android.content.Context;
 import android.os.AsyncTask;
-import android.widget.Toast;
 
 public class WebServiceTask extends AsyncTask<Void, Void, String> {
 	private static final String HOST_URL = "http://jakkugames.host22.com";
 	private static final String MESSAGE_PATH = "/application/hopeplus/get_message.php";
-	private Context mContext;
 	private HopeGenerator mHopeG;
+	private String mSentiment;
 	
-	public WebServiceTask(HopeGenerator hope_g) {
+	public WebServiceTask(HopeGenerator hope_g, String sentiment) {
 		mHopeG = hope_g;
-		mContext = mHopeG.getContext();
+		mSentiment = sentiment;
 	}
 	
 	public String getMessageFromURL() {
 		String response = "";
         try {
+        	// Create a JSON object
+        	JSONObject json = new JSONObject();
+        	json.put("sentiment", mSentiment);
+        	
             // Instantiate an HttpClient
-            HttpClient httpclient = new DefaultHttpClient();
+        	HttpParams httpParams = new BasicHttpParams();
+        	HttpConnectionParams.setConnectionTimeout(httpParams, CommonClass.HTTP_TIMEOUT_MS);
+        	HttpConnectionParams.setSoTimeout(httpParams, CommonClass.HTTP_TIMEOUT_MS);
+        	
+            HttpClient httpclient = new DefaultHttpClient(httpParams);
             HttpPost httppost = new HttpPost(HOST_URL + MESSAGE_PATH);
-       
+            
+            StringEntity se = new StringEntity(json.toString());
+            
+            httppost.setEntity(se);
+            httppost.setHeader("json", json.toString());
+            
             try {
                 ResponseHandler<String> responseHandler = new BasicResponseHandler();
                 response = httpclient.execute(httppost, responseHandler);
@@ -49,9 +66,9 @@ public class WebServiceTask extends AsyncTask<Void, Void, String> {
                 e.printStackTrace();
             }
         } catch (Throwable t) {
-            Toast.makeText(mContext, t.toString(), Toast.LENGTH_LONG).show();
+            return t.toString();
         }
-        return response ;
+        return response;
 	}
 	
 	public String processResponse(String response) {
@@ -89,7 +106,7 @@ public class WebServiceTask extends AsyncTask<Void, Void, String> {
                             return null;
                     } catch (SAXException e) {
                             Debug.w("Wrong XML file structure: " + e.getMessage());
-                return null;
+                            return null;
                     } catch (IOException e) {
                             Debug.w("I/O exeption: " + e.getMessage());
                             return null;
@@ -108,7 +125,7 @@ public class WebServiceTask extends AsyncTask<Void, Void, String> {
 	
 	protected void onPostExecute(String message) {
 		mHopeG.outMessage();
-
+		
 	}
 
 }

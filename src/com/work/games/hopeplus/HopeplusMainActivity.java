@@ -17,6 +17,7 @@ import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.andengine.opengl.texture.region.ITextureRegion;
+import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.texture.region.TiledTextureRegion;
 
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
@@ -25,6 +26,7 @@ import org.andengine.util.HorizontalAlign;
 import org.andengine.util.color.Color;
 
 import com.work.games.common.CommonClass;
+import com.work.games.common.EmoteButton;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -51,11 +53,12 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 	private Sensor mAccelerometer;
 	private float mLastX, mLastY, mLastZ;
 	private HopeGenerator mGenerator;
-	private BitmapTextureAtlas mInputTexture;
+	private BitmapTextureAtlas mButtonTexture;
 	private Text mMessage, mAuthor;
-	private TiledTextureRegion mMessageTexture;
+	private ITextureRegion mButtonLoveTexture, mButtonJoyTexture;
 	private Font mSmallFont;
 	private TextOptions mTextOptions;
+	private EmoteButton mButtonLove, mButtonJoy;
 
 			
 	// ===========================================================
@@ -88,24 +91,27 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 	public void onCreateResources() {		
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
 
-		mTexture = new BitmapTextureAtlas(this.getTextureManager(), 480, 750, TextureOptions.DEFAULT);
+		mTexture = new BitmapTextureAtlas(this.getTextureManager(), 512, 1024, TextureOptions.DEFAULT);
 		mTexture.load();
 		
-		mInputTexture = new BitmapTextureAtlas(this.getTextureManager(), 480, 150, TextureOptions.DEFAULT);
-		mInputTexture.load();
+		mButtonTexture = new BitmapTextureAtlas(this.getTextureManager(), 512, 512, TextureOptions.DEFAULT);
+		mButtonTexture.load();
 
-		mLogoRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mTexture, this, "crystalball.png", 0,0);
+		mLogoRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mTexture, this, "board.png", 0,0);
 		
 		mSmallFont = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256, Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 24);
 		mSmallFont.load();
 
-		mMessageTexture = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mInputTexture, this, "textbox.png", 0, 0, 1, 1);
+		mButtonLoveTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mButtonTexture, this, "button_love.png", 0, 0);
+		mButtonJoyTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mButtonTexture, this, "button_joy.png", 60, 0);
 		mTextOptions = new TextOptions(AutoWrap.WORDS, 350, Text.LEADING_DEFAULT, HorizontalAlign.CENTER);
 		mMessage = new Text(55, 120, mSmallFont, "", 512, mTextOptions, this.getVertexBufferObjectManager());
 		mAuthor = new Text(55, 350, mSmallFont, "", 256, mTextOptions, this.getVertexBufferObjectManager());
 		
 		mGenerator = new HopeGenerator(this, mMessage, mAuthor);
 
+		
+		
 	}
 
 	@Override
@@ -122,10 +128,20 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 		
 		mLogoSprite = new Sprite(centerX, centerY, mLogoRegion, vertexBufferObjectManager);
 		mBackground = new SpriteBackground(mLogoSprite);
+		
 		mScene.setBackground(mBackground);
 		
 		mScene.attachChild(mMessage);
 		mScene.attachChild(mAuthor);
+
+		// Create the EmoteButtons
+		mButtonLove = new EmoteButton(25, 450, "love", mButtonLoveTexture, this.getVertexBufferObjectManager());
+		mScene.attachChild(mButtonLove);
+		mScene.registerTouchArea(mButtonLove);
+
+		mButtonJoy = new EmoteButton(95, 450, "joy", mButtonJoyTexture, this.getVertexBufferObjectManager());
+		mScene.attachChild(mButtonJoy);
+		mScene.registerTouchArea(mButtonJoy);
 
 		mInitialized = false;
 		return mScene;
@@ -199,8 +215,9 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 			mLastY = y;
 			mLastZ = z;
 
-			if(deltaX != deltaY)
-				mGenerator.getHope();
+			if(deltaX != deltaY) {
+				mGenerator.getHope("love");
+			}
 		}
 	}
 

@@ -13,6 +13,7 @@ public class CommonClass {
 	 * Time
 	 */
 	public static final float SPLASH_TIME_2 = 2f;
+	public static final int HTTP_TIMEOUT_MS = 10000; // 10 seconds
 	
 	/*
 	 * Accelerometer Noise
