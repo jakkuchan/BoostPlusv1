@@ -5,7 +5,7 @@ import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
 import org.andengine.entity.scene.Scene;
-import org.andengine.entity.scene.background.SpriteBackground;
+import org.andengine.entity.scene.background.Background;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.text.AutoWrap;
 import org.andengine.entity.text.Text;
@@ -13,6 +13,7 @@ import org.andengine.entity.text.TextOptions;
 import org.andengine.entity.util.FPSLogger;
 import org.andengine.opengl.font.Font;
 import org.andengine.opengl.font.FontFactory;
+import org.andengine.opengl.texture.ITexture;
 import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
@@ -47,7 +48,6 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 	private BitmapTextureAtlas mTexture;
 	private ITextureRegion mLogoRegion;
 	private Sprite mLogoSprite;
-	private SpriteBackground mBackground;
 	private boolean mInitialized;
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
@@ -56,7 +56,7 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 	private BitmapTextureAtlas mButtonTexture;
 	private Text mMessage, mAuthor;
 	private ITextureRegion mButtonLoveTexture, mButtonJoyTexture;
-	private Font mSmallFont;
+	private Font mMessageFont, mAuthorFont;
 	private TextOptions mTextOptions;
 	private EmoteButton mButtonLove, mButtonJoy;
 
@@ -97,21 +97,25 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 		mButtonTexture = new BitmapTextureAtlas(this.getTextureManager(), 512, 512, TextureOptions.DEFAULT);
 		mButtonTexture.load();
 
-		mLogoRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mTexture, this, "board.png", 0,0);
+		mLogoRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mTexture, this, "crystalball.png", 0,0);
 		
-		mSmallFont = FontFactory.create(this.getFontManager(), this.getTextureManager(), 256, 256, Typeface.create(Typeface.DEFAULT, Typeface.BOLD), 24);
-		mSmallFont.load();
-
+		FontFactory.setAssetBasePath("font/");
+		final ITexture requiemFontTexture = new BitmapTextureAtlas(this.getTextureManager(), 256, 256, TextureOptions.NEAREST);
+		final ITexture requiemFontTexture2 = new BitmapTextureAtlas(this.getTextureManager(), 256, 256, TextureOptions.NEAREST);
+		mMessageFont = FontFactory.createFromAsset(this.getFontManager(), requiemFontTexture, this.getAssets(), "Requiem.ttf", CommonClass.FONT_SIZE_M, true, android.graphics.Color.rgb(218, 150, 50));
+		mMessageFont.load();
+		
+		mAuthorFont = FontFactory.createFromAsset(this.getFontManager(), requiemFontTexture2, this.getAssets(), "Requiem.ttf", CommonClass.FONT_SIZE_S, true, android.graphics.Color.WHITE);
+		mAuthorFont.load();
+		
 		mButtonLoveTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mButtonTexture, this, "button_love.png", 0, 0);
 		mButtonJoyTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mButtonTexture, this, "button_joy.png", 60, 0);
-		mTextOptions = new TextOptions(AutoWrap.WORDS, 350, Text.LEADING_DEFAULT, HorizontalAlign.CENTER);
-		mMessage = new Text(55, 120, mSmallFont, "", 512, mTextOptions, this.getVertexBufferObjectManager());
-		mAuthor = new Text(55, 350, mSmallFont, "", 256, mTextOptions, this.getVertexBufferObjectManager());
+		mTextOptions = new TextOptions(AutoWrap.WORDS, 320, Text.LEADING_DEFAULT, HorizontalAlign.CENTER);
+		mMessage = new Text(80, 225, mMessageFont, "", 512, mTextOptions, this.getVertexBufferObjectManager());
+		mAuthor = new Text(80, 550, mAuthorFont, "", 256, mTextOptions, this.getVertexBufferObjectManager());
 		
 		mGenerator = new HopeGenerator(this, mMessage, mAuthor);
 
-		
-		
 	}
 
 	@Override
@@ -122,24 +126,22 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 		
 		mScene = new Scene();	
 		mScene.setColor(Color.BLACK);
+				
+		mLogoSprite = new Sprite(85, 140, mLogoRegion, vertexBufferObjectManager);
+		mLogoSprite.setScale(1.5f);
 		
-		final float centerX = 0;
-		final float centerY = 0;
-		
-		mLogoSprite = new Sprite(centerX, centerY, mLogoRegion, vertexBufferObjectManager);
-		mBackground = new SpriteBackground(mLogoSprite);
-		
-		mScene.setBackground(mBackground);
+		mScene.setBackground(new Background(0.0f, 0.0f, 0.0f));
+		mScene.attachChild(mLogoSprite);
 		
 		mScene.attachChild(mMessage);
 		mScene.attachChild(mAuthor);
 
 		// Create the EmoteButtons
-		mButtonLove = new EmoteButton(25, 450, "love", mButtonLoveTexture, this.getVertexBufferObjectManager());
+		mButtonLove = new EmoteButton(25, 650, "love", mButtonLoveTexture, this.getVertexBufferObjectManager());
 		mScene.attachChild(mButtonLove);
 		mScene.registerTouchArea(mButtonLove);
 
-		mButtonJoy = new EmoteButton(95, 450, "joy", mButtonJoyTexture, this.getVertexBufferObjectManager());
+		mButtonJoy = new EmoteButton(95, 650, "joy", mButtonJoyTexture, this.getVertexBufferObjectManager());
 		mScene.attachChild(mButtonJoy);
 		mScene.registerTouchArea(mButtonJoy);
 

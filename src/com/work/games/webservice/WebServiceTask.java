@@ -62,13 +62,15 @@ public class WebServiceTask extends AsyncTask<Void, Void, String> {
             try {
                 ResponseHandler<String> responseHandler = new BasicResponseHandler();
                 response = httpclient.execute(httppost, responseHandler);
+                if(response != null)
+                	return response;
             } catch (ClientProtocolException e) {
                 e.printStackTrace();
             }
         } catch (Throwable t) {
             return t.toString();
         }
-        return response;
+        return "";
 	}
 	
 	public String processResponse(String response) {
