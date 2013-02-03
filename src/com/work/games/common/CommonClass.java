@@ -33,6 +33,6 @@ public class CommonClass {
 	public static final float FONT_SIZE_S = 12f;
 	public static final float FONT_SIZE_M = 25f;
 	public static final float FONT_SIZE_L = 36f;
+		
 	
-
 }

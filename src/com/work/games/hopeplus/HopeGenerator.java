@@ -59,7 +59,6 @@ public class HopeGenerator implements OnInitListener {
 			mTalker.speak(mMessageString, TextToSpeech.QUEUE_FLUSH, null);
 			mMessageText.setText(mMessageString);
 			mAuthorText.setText(mAuthorString);
-			//Toast.makeText(mContext, message, Toast.LENGTH_LONG).show();
 		}
 	}
 	
@@ -69,5 +68,13 @@ public class HopeGenerator implements OnInitListener {
 	
 	public void setAuthorString(String author) {
 		this.mAuthorString = author;
+	}
+	
+	public boolean isTalkerSpeaking() {
+		return mTalker.isSpeaking();
+	}
+	
+	public TextToSpeech getTalker() {
+		return mTalker;
 	}
 }
