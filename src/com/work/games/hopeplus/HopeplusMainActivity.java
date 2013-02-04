@@ -2,15 +2,18 @@ package com.work.games.hopeplus;
 
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Locale;
 
 import org.andengine.engine.camera.Camera;
 import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
+import org.andengine.entity.modifier.AlphaModifier;
 import org.andengine.entity.scene.Scene;
-import org.andengine.entity.scene.background.Background;
+import org.andengine.entity.scene.background.SpriteBackground;
 import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.ButtonSprite.OnClickListener;
+import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.text.AutoWrap;
 import org.andengine.entity.text.Text;
 import org.andengine.entity.text.TextOptions;
@@ -31,6 +34,7 @@ import org.andengine.util.color.Color;
 import com.work.games.common.CommonClass;
 import com.work.games.common.EmoteButton;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -38,28 +42,34 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.opengl.GLES20;
 import android.view.KeyEvent;
 
+@SuppressLint("DefaultLocale")
 public class HopeplusMainActivity extends SimpleBaseGameActivity implements SensorEventListener {
 
 	private Camera mCamera;
 	private Scene mScene;
 	private BitmapTextureAtlas mTexture;
-	private ITextureRegion mCrystalBallRegion;
+	private ITextureRegion mCrystalBallRegion, mBackgroundRegion;
 	private ButtonSprite mCrystalBall;
+	private SpriteBackground mBackground;
+	private Sprite mBackgroundSprite;
 	private boolean mInitialized;
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
 	private float mLastX, mLastY, mLastZ;
 	private HopeGenerator mGenerator;
 	private BitmapTextureAtlas mButtonTexture;
-	private Text mMessage, mAuthor;
+	private Text mMessage, mAuthor, mLabel;
 	private ITextureRegion mButtonLoveTexture, mButtonJoyTexture;
 	private Font mMessageFont, mAuthorFont;
 	private TextOptions mTextOptions;
 	private EmoteButton mButtonLove, mButtonJoy;
 	private LinkedList<EmoteButton> mRuneList;
 	private Emote mCurrentEmote; 
+	//private AlphaModifier mMessageModifier;
+
 			
 	// ===========================================================
 	// Constructors
@@ -94,10 +104,12 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 		mTexture = new BitmapTextureAtlas(this.getTextureManager(), 512, 1024, TextureOptions.DEFAULT);
 		mTexture.load();
 		
-		mButtonTexture = new BitmapTextureAtlas(this.getTextureManager(), 512, 512, TextureOptions.DEFAULT);
+		mButtonTexture = new BitmapTextureAtlas(this.getTextureManager(), 1024, 1024, TextureOptions.DEFAULT);
 		mButtonTexture.load();
 
-		mCrystalBallRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mTexture, this, "crystalball.png", 0,0);
+		mBackgroundRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mTexture, this, "background.png", 0,0 );
+		
+		mCrystalBallRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(mButtonTexture, this, "crystalball.png", 0,0);
 		
 		FontFactory.setAssetBasePath("font/");
 		final ITexture requiemFontTexture = new BitmapTextureAtlas(this.getTextureManager(), 256, 256, TextureOptions.NEAREST);
@@ -108,16 +120,19 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 		mAuthorFont = FontFactory.createFromAsset(this.getFontManager(), requiemFontTexture2, this.getAssets(), "Requiem.ttf", CommonClass.FONT_SIZE_S, true, android.graphics.Color.WHITE);
 		mAuthorFont.load();
 		
-		mButtonLoveTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mButtonTexture, this, "button_love.png", 0, 0);
-		mButtonJoyTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mButtonTexture, this, "button_joy.png", 100, 0);
+		mButtonLoveTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mButtonTexture, this, "button_love.png", 336, 0);
+		mButtonJoyTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mButtonTexture, this, "button_joy.png", 336, 250);
 		mTextOptions = new TextOptions(AutoWrap.WORDS, 320, Text.LEADING_DEFAULT, HorizontalAlign.CENTER);
-		mMessage = new Text(80, 225, mMessageFont, "", 512, mTextOptions, this.getVertexBufferObjectManager());
-		mAuthor = new Text(80, 550, mAuthorFont, "", 256, mTextOptions, this.getVertexBufferObjectManager());
+		mMessage = new Text(80, 230, mMessageFont, "", 512, mTextOptions, this.getVertexBufferObjectManager());
+		mAuthor = new Text(80, 450, mAuthorFont, "", 256, mTextOptions, this.getVertexBufferObjectManager());
+		mLabel = new Text(80, 600, mMessageFont, "", 256, mTextOptions, this.getVertexBufferObjectManager());
 		
 		mGenerator = new HopeGenerator(this, mMessage, mAuthor);
 
 		mRuneList = new LinkedList<EmoteButton>();
-
+		
+		mMessage.setBlendFunction(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+		//mMessageModifier= new AlphaModifier(5, 0, 1.0f);
 	}
 
 	@Override
@@ -128,8 +143,11 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 		
 		mScene = new Scene();	
 		mScene.setColor(Color.BLACK);
-		mScene.setBackground(new Background(0.0f, 0.0f, 0.0f));
-		mCrystalBall = new ButtonSprite(85, 140, mCrystalBallRegion, vertexBufferObjectManager);
+		mBackgroundSprite = new Sprite(0,0, mBackgroundRegion, vertexBufferObjectManager);
+		mBackground = new SpriteBackground(mBackgroundSprite);
+		mScene.setBackground(mBackground);
+		
+		mCrystalBall = new ButtonSprite(72, 145, mCrystalBallRegion, vertexBufferObjectManager);
 		mCrystalBall.setOnClickListener( new OnClickListener()
 		{
 		    public void onClick( ButtonSprite pButtonSprite, float pTouchAreaLocalX, float pTouchAreaLocalY )
@@ -138,27 +156,27 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 		    	if(!mGenerator.isTalkerSpeaking()) {
 			    	if(mCurrentEmote.getLabel().equalsIgnoreCase("love")) {
 			    		mCurrentEmote = Emote.JOY;
-			    		mButtonLove.setVisible(false);
-			    		mButtonJoy.setVisible(true);
 			    	}
 			    	else if(mCurrentEmote.getLabel().equalsIgnoreCase("joy")) {
 			    		mCurrentEmote = Emote.LOVE;
-			    		mButtonLove.setVisible(true);
-			    		mButtonJoy.setVisible(false);
 			    	}
-			    	
+
+			    	displayRunes(true);
+		    		mLabel.setText(mCurrentEmote.getLabel().toUpperCase(Locale.getDefault()));
 			    	mMessage.setText("");
 			    	mAuthor.setText("");
 		    	}
 		    }      
 		});
-		mCrystalBall.setScale(1.5f);
 		
 		mScene.attachChild(mCrystalBall);
 		mScene.registerTouchArea(mCrystalBall);
 		
+		textModifierReset();
 		mScene.attachChild(mMessage);
+		
 		mScene.attachChild(mAuthor);
+		mScene.attachChild(mLabel);
 		
 		initRunes();
 		
@@ -236,6 +254,7 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 			if(deltaX != deltaY) {
 				displayRunes(false);
 				mGenerator.getHope(mCurrentEmote.getLabel());
+				textModifierReset();
 			}
 		}
 	}
@@ -244,15 +263,16 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 	 * @brief This method adds the runes to a LinkedList
 	 * 			to help managing them.
 	 */
+	@SuppressLint("DefaultLocale")
 	public void initRunes() {
 
 		// Create the EmoteButtons
-		mButtonLove = new EmoteButton(190, 250, "love", mButtonLoveTexture, this.getVertexBufferObjectManager());
+		mButtonLove = new EmoteButton(120, 190, "love", mButtonLoveTexture, this.getVertexBufferObjectManager());
 		mScene.attachChild(mButtonLove);
 		mButtonLove.setVisible(false);
 		mRuneList.add(mButtonLove);
 
-		mButtonJoy = new EmoteButton(190, 250, "joy", mButtonJoyTexture, this.getVertexBufferObjectManager());
+		mButtonJoy = new EmoteButton(120, 190, "joy", mButtonJoyTexture, this.getVertexBufferObjectManager());
 		mScene.attachChild(mButtonJoy);
 		mButtonJoy.setVisible(false);
 		mRuneList.add(mButtonJoy);
@@ -260,7 +280,8 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 		//Set default emote to Love
 		mButtonLove.setVisible(true);
 		mCurrentEmote = Emote.LOVE;
-
+		mLabel.setText(mCurrentEmote.getLabel().toUpperCase(Locale.getDefault()));
+		
 	}
 	
 	public void displayRunes(boolean visible) {
@@ -270,17 +291,18 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 		while(runes.hasNext()) {
 			_emote_b = runes.next();
 			
+			_emote_b.setVisible(false);
 			if(visible) {
 				// show current rune
-				if(_emote_b.getSentiment().equalsIgnoreCase(mCurrentEmote.getLabel())) {
+				if(_emote_b.getSentiment().equalsIgnoreCase(mCurrentEmote.getLabel()))
 					_emote_b.setVisible(true);
-				}
-			}
-			else {
-				_emote_b.setVisible(false);
 			}
 		}
 		
 	}
 
+	protected void textModifierReset() {
+		mMessage.clearEntityModifiers();
+		mMessage.registerEntityModifier(new AlphaModifier(4,0,1.0f));		
+	}
 }

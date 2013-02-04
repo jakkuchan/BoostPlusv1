@@ -16,7 +16,7 @@ public class EmoteButton extends Sprite {
 		this.mSentiment = sentiment;
 		isSelected = false;
 	}
-
+	
 	public String getSentiment() {
 		return mSentiment;
 	}
