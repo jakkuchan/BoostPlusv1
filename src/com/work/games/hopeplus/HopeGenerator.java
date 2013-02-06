@@ -21,10 +21,10 @@ public class HopeGenerator implements OnInitListener {
 	
 	public HopeGenerator(Context context, Text message, Text author) {
 		this.mContext = context;
-		this.mTalker = new TextToSpeech(mContext, this);
 		this.mMessageText = message;
 		this.mAuthorText = author;
 		this.mNetMgr = new NetworkManager(mContext);
+		resumeResources();
 	}
 	
 	@Override
@@ -76,5 +76,10 @@ public class HopeGenerator implements OnInitListener {
 	
 	public TextToSpeech getTalker() {
 		return mTalker;
+	}
+
+	public void resumeResources() {
+		this.mTalker = new TextToSpeech(mContext, this);
+
 	}
 }

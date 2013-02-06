@@ -4,20 +4,6 @@
 	<comment></comment>
 	<projects>
 		<project>AndEngine</project>
-		<project>AndEngineAugmentedRealityExtension</project>
-		<project>AndEngineExamples</project>
-		<project>AndEngineLiveWallpaperExtension</project>
-		<project>AndEngineMODPlayerExtension</project>
-		<project>AndEngineMultiplayerExtension</project>
-		<project>AndEnginePhysicsBox2DExtension</project>
-		<project>AndEngineRobotiumExtension</project>
-		<project>AndEngineRobotiumExtensionExample</project>
-		<project>AndEngineRobotiumExtensionExampleTest</project>
-		<project>AndEngineScriptingExtension</project>
-		<project>AndEngineScriptingExtensionGenerator</project>
-		<project>AndEngineSVGTextureRegionExtension</project>
-		<project>AndEngineTexturePackerExtension</project>
-		<project>AndEngineTMXTiledMapExtension</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

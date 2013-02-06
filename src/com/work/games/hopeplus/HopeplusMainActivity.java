@@ -89,14 +89,13 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-		mSensorManager.registerListener(HopeplusMainActivity.this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+		//mSensorManager.registerListener(HopeplusMainActivity.this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 		
 		final EngineOptions mEngineOptions = new EngineOptions(true, ScreenOrientation.PORTRAIT_FIXED, new RatioResolutionPolicy(CommonClass.PORTRAIT_CAMERA_WIDTH, CommonClass.PORTRAIT_CAMERA_HEIGHT), mCamera);				
 		return mEngineOptions;
 		
 	}
 
-	
 	@Override
 	public void onCreateResources() {		
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
@@ -138,7 +137,7 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 	@Override
 	public Scene onCreateScene() {
 		final VertexBufferObjectManager vertexBufferObjectManager = this.getVertexBufferObjectManager();
-		
+
 		this.mEngine.registerUpdateHandler(new FPSLogger());
 		
 		mScene = new Scene();	
@@ -259,6 +258,21 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 		}
 	}
 	
+	@Override
+	public void onPause() {
+		mSensorManager.unregisterListener(HopeplusMainActivity.this);
+		mGenerator.close();
+		super.onPause();
+	}
+	
+	@Override
+	public void onResumeGame() {
+		mSensorManager.registerListener(HopeplusMainActivity.this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+		mGenerator.resumeResources();
+		super.onResumeGame();
+	}
+	
+	
 	/*
 	 * @brief This method adds the runes to a LinkedList
 	 * 			to help managing them.
@@ -305,4 +319,5 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 		mMessage.clearEntityModifiers();
 		mMessage.registerEntityModifier(new AlphaModifier(4,0,1.0f));		
 	}
+	
 }
