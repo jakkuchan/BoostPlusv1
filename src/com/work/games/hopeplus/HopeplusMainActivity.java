@@ -112,7 +112,7 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 		FontFactory.setAssetBasePath("font/");
 		final ITexture requiemFontTexture = new BitmapTextureAtlas(this.getTextureManager(), 256, 256, TextureOptions.NEAREST);
 		final ITexture requiemFontTexture2 = new BitmapTextureAtlas(this.getTextureManager(), 256, 256, TextureOptions.NEAREST);
-		mMessageFont = FontFactory.createFromAsset(this.getFontManager(), requiemFontTexture, this.getAssets(), "Requiem.ttf", CommonClass.FONT_SIZE_M, true, android.graphics.Color.rgb(218, 150, 50));
+		mMessageFont = FontFactory.createFromAsset(this.getFontManager	(), requiemFontTexture, this.getAssets(), "Requiem.ttf", CommonClass.FONT_SIZE_M, true, android.graphics.Color.rgb(218, 150, 50));
 		mMessageFont.load();
 		
 		mAuthorFont = FontFactory.createFromAsset(this.getFontManager(), requiemFontTexture2, this.getAssets(), "Requiem.ttf", CommonClass.FONT_SIZE_S, true, android.graphics.Color.WHITE);
@@ -221,7 +221,6 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 	@Override
 	public void onAccuracyChanged(Sensor arg0, int arg1) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override

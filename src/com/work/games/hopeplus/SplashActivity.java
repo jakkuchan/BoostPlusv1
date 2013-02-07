@@ -25,6 +25,7 @@ public class SplashActivity extends SimpleBaseGameActivity {
 	private Camera				mCamera;
 	private SplashScene			mSplashScene;
 	private TitleScene			mTitleScene;
+	private SettingsScene		mSettingsScene;
 	
 		
 	@Override
@@ -58,7 +59,7 @@ public class SplashActivity extends SimpleBaseGameActivity {
 		}));
 
 		// Create Title Screen Instance
-		mTitleScene = new TitleScene(this, this.getTextureManager(), vbo);
+		mTitleScene = new TitleScene(this.mEngine, this, this.getTextureManager(), vbo);
 		mTitleScene.getStartButton().setOnClickListener( new OnClickListener()
 		{
 		    public void onClick( ButtonSprite pButtonSprite, float pTouchAreaLocalX, float pTouchAreaLocalY )
@@ -73,9 +74,13 @@ public class SplashActivity extends SimpleBaseGameActivity {
 		{
 		    public void onClick( ButtonSprite pButtonSprite, float pTouchAreaLocalX, float pTouchAreaLocalY )
 		    {
+		    	mEngine.setScene(mSettingsScene);
 		    }      
 		});
 
+		// Create Settings Screen Instance
+		mSettingsScene = new SettingsScene(this.mEngine, this, this.getTextureManager(), vbo);
+		
 		// Return Splash screen first
 		return mSplashScene;
 	}
