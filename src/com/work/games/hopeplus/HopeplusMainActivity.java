@@ -25,14 +25,10 @@ import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.andengine.opengl.texture.region.ITextureRegion;
-
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.util.HorizontalAlign;
 import org.andengine.util.color.Color;
-
-import com.work.games.common.CommonClass;
-import com.work.games.common.EmoteButton;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -44,6 +40,9 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.opengl.GLES20;
 import android.view.KeyEvent;
+
+import com.work.games.common.CommonClass;
+import com.work.games.common.EmoteButton;
 
 @SuppressLint("DefaultLocale")
 public class HopeplusMainActivity extends SimpleBaseGameActivity implements SensorEventListener {
@@ -97,7 +96,7 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 	}
 
 	@Override
-	public void onCreateResources() {		
+	public void onCreateResources() {
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
 
 		mTexture = new BitmapTextureAtlas(this.getTextureManager(), 512, 1024, TextureOptions.DEFAULT);
@@ -200,9 +199,9 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						// TODO Auto-generated method stub
+						mGenerator.close();
 						mSensorManager.unregisterListener(HopeplusMainActivity.this);
 						HopeplusMainActivity.this.finish();
-						mGenerator.close();
 					}
 				}).setNegativeButton("No", 
 				new DialogInterface.OnClickListener() {
@@ -307,7 +306,7 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 			
 			_emote_b.setVisible(false);
 			if(visible) {
-				// show current rune
+				// show current sphere
 				if(_emote_b.getSentiment().equalsIgnoreCase(mCurrentEmote.getLabel()))
 					_emote_b.setVisible(true);
 			}

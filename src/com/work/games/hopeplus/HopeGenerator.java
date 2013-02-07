@@ -11,7 +11,7 @@ import com.work.games.webservice.WebServiceTask;
 
 public class HopeGenerator implements OnInitListener {
 	private Context mContext;
-	private TextToSpeech mTalker;	
+	private TextToSpeech mTalker = null;	
 	private Text mMessageText;
 	private Text mAuthorText;
 	private String mMessageString;
@@ -24,7 +24,6 @@ public class HopeGenerator implements OnInitListener {
 		this.mMessageText = message;
 		this.mAuthorText = author;
 		this.mNetMgr = new NetworkManager(mContext);
-		resumeResources();
 	}
 	
 	@Override
@@ -34,7 +33,11 @@ public class HopeGenerator implements OnInitListener {
 	}
 	
 	public void close() {
-		mTalker.shutdown();
+		if(mTalker != null) {
+			mTalker.stop();
+			mTalker.shutdown();
+		}
+		
 		if(mWst != null)
 			mWst.cancel(true);
 	}
@@ -79,7 +82,6 @@ public class HopeGenerator implements OnInitListener {
 	}
 
 	public void resumeResources() {
-		this.mTalker = new TextToSpeech(mContext, this);
-
+		mTalker = new TextToSpeech(mContext, this);
 	}
 }
