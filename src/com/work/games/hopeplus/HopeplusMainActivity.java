@@ -34,6 +34,7 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -68,6 +69,8 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 	private EmoteButton mButtonLove, mButtonJoy, mButtonPeace, mButtonTrust, mButtonAdmiration, mButtonSurprise;
 	private LinkedList<EmoteButton> mEmoteList;
 	private Emote mCurrentEmote;
+	private SharedPreferences   mPref;
+	private float				mRateVal, mPitchVal, mSensitivityVal;
 			
 	// ===========================================================
 	// Constructors
@@ -128,8 +131,12 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 		mAuthor = new Text(80, 450, mAuthorFont, "", 256, mTextOptions, this.getVertexBufferObjectManager());
 		mLabel = new Text(80, 600, mMessageFont, "", 256, mTextOptions, this.getVertexBufferObjectManager());
 		
-		mGenerator = new HopeGenerator(this, mMessage, mAuthor);
+		// Load setting preferences
+		loadSettingsValues();
 
+		mGenerator = new HopeGenerator(this, mMessage, mAuthor);
+		mGenerator.setTalker(mPitchVal, mRateVal);
+		
 		mEmoteList = new LinkedList<EmoteButton>();
 		
 		mMessage.setBlendFunction(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
@@ -142,6 +149,7 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 		final VertexBufferObjectManager vertexBufferObjectManager = this.getVertexBufferObjectManager();
 
 		this.mEngine.registerUpdateHandler(new FPSLogger());
+		
 		
 		mScene = new Scene();	
 		mScene.setColor(Color.BLACK);
@@ -256,9 +264,9 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 			float deltaY = Math.abs(mLastY - y);
 			float deltaZ = Math.abs(mLastZ - z);
 			
-			if(deltaX < CommonClass.SENSITIVITY_MID) deltaX = 0.0f;
-			if(deltaY < CommonClass.SENSITIVITY_MID) deltaY = 0.0f;
-			if(deltaZ < CommonClass.SENSITIVITY_MID) deltaZ = 0.0f;
+			if(deltaX < mSensitivityVal) deltaX = 0.0f;
+			if(deltaY < mSensitivityVal) deltaY = 0.0f;
+			if(deltaZ < mSensitivityVal) deltaZ = 0.0f;
 
 			mLastX = x;
 			mLastY = y;
@@ -354,4 +362,12 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 		mMessage.registerEntityModifier(new AlphaModifier(4,0,1.0f));		
 	}
 	
+	private void loadSettingsValues() {
+		mPref = getSharedPreferences(CommonClass.PREFERENCES_STRING, Context.MODE_PRIVATE);
+		
+		mRateVal = mPref.getFloat("Rate", CommonClass.SPEECH_RATE_L);
+		mPitchVal = mPref.getFloat("Pitch", CommonClass.PITCH_LVL_M);
+		mSensitivityVal = mPref.getFloat("Sensitivity", CommonClass.SENSITIVITY_MID);
+	}
+
 }

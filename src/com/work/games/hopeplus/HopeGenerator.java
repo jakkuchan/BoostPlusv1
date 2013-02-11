@@ -21,6 +21,7 @@ public class HopeGenerator implements OnInitListener {
 	private String mAuthorString;
 	private WebServiceTask mWst;
 	private NetworkManager mNetMgr;
+	private float mRate, mPitch;
 	
 	public HopeGenerator(Context context, Text message, Text author) {
 		this.mContext = context;
@@ -100,5 +101,12 @@ public class HopeGenerator implements OnInitListener {
 		if(mTalker != null)
 			mTalker.shutdown();
 		mTalker = new TextToSpeech(mContext, this);
+		mTalker.setPitch(mPitch);
+		mTalker.setSpeechRate(mRate);
+	}
+	
+	public void setTalker(float pPitch, float pRate) {
+		mPitch = pPitch;
+		mRate = pRate;
 	}
 }

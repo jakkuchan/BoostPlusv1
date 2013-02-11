@@ -56,4 +56,12 @@ public class CommonClass {
 	public static final float PITCH_LVL_M = 1.0f;
 	public static final float PITCH_LVL_S = 0.5f;
 	
+	/*
+	 * Settings
+	 */
+	public static final int SETTING_LOW = 0;
+	public static final int SETTING_MID = 1;
+	public static final int SETTING_HI = 2;
+
+	
 }

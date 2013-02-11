@@ -13,7 +13,10 @@ import org.andengine.entity.util.FPSLogger;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.view.KeyEvent;
 
 import com.work.games.common.CommonClass;
 
@@ -26,6 +29,9 @@ public class SplashActivity extends SimpleBaseGameActivity {
 	private SplashScene			mSplashScene;
 	private TitleScene			mTitleScene;
 	private SettingsScene		mSettingsScene;
+	private int					mCurrentScene;
+	private final int			SPLASH_SCENE = 0, TITLE_SCENE = 1, SETTINGS_SCENE = 2; 
+	private SharedPreferences   mPref;
 	
 		
 	@Override
@@ -53,6 +59,7 @@ public class SplashActivity extends SimpleBaseGameActivity {
 			@Override
 			public void onTimePassed(TimerHandler pTimerHandler) {
 				// TODO Auto-generated method stub
+				mCurrentScene = TITLE_SCENE;
 				mEngine.setScene(mTitleScene);
 			}
 	
@@ -74,15 +81,51 @@ public class SplashActivity extends SimpleBaseGameActivity {
 		{
 		    public void onClick( ButtonSprite pButtonSprite, float pTouchAreaLocalX, float pTouchAreaLocalY )
 		    {
+		    	mCurrentScene = SETTINGS_SCENE;
 		    	mEngine.setScene(mSettingsScene);
 		    }      
 		});
 
 		// Create Settings Screen Instance
-		mSettingsScene = new SettingsScene(this.mEngine, this, this.getTextureManager(), vbo);
+		mSettingsScene = new SettingsScene(this.mEngine, this, this.getTextureManager(), this.getFontManager(), vbo);
+		loadSettingValues();
+		
+		mCurrentScene = SPLASH_SCENE;
 		
 		// Return Splash screen first
 		return mSplashScene;
+	}
+	
+	@Override
+	public boolean onKeyDown(final int pKeyCode, final KeyEvent pEvent) {
+	    if(pKeyCode == KeyEvent.KEYCODE_BACK &&
+	    		pEvent.getAction() == KeyEvent.ACTION_DOWN) {
+	    		if(mCurrentScene == SETTINGS_SCENE) {
+	    			saveSettingValues();
+	    			mCurrentScene = TITLE_SCENE;
+	    			mEngine.setScene(mTitleScene);
+	    			return true;
+	    		}
+	    }
+	    return super.onKeyDown(pKeyCode, pEvent);
+	}
+
+	private void saveSettingValues() {
+		SharedPreferences.Editor editor = mPref.edit();
+		
+		editor.putFloat("Rate", mSettingsScene.getRate());
+		editor.putFloat("Pitch", mSettingsScene.getPitch());
+		editor.putFloat("Sensitivity", mSettingsScene.getSensitivity());
+		editor.commit();	
+	}
+	
+	private void loadSettingValues() {
+		mPref = getSharedPreferences(CommonClass.PREFERENCES_STRING, Context.MODE_PRIVATE);
+		
+		float rate = mPref.getFloat("Rate", CommonClass.SPEECH_RATE_L);
+		float pitch = mPref.getFloat("Pitch", CommonClass.PITCH_LVL_M);
+		float sensitivity = mPref.getFloat("Sensitivity", CommonClass.SENSITIVITY_MID);
+		mSettingsScene.setSettings(rate, pitch, sensitivity);
 	}
 
 }
