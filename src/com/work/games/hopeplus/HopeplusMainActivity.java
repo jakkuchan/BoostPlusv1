@@ -61,14 +61,13 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 	private HopeGenerator mGenerator;
 	private BitmapTextureAtlas mButtonTexture;
 	private Text mMessage, mAuthor, mLabel;
-	private ITextureRegion mButtonLoveTexture, mButtonJoyTexture;
+	private ITextureRegion mButtonLoveTexture, mButtonJoyTexture, mButtonPeaceTexture, mButtonTrustTexture,
+			mButtonAdmirationTexture, mButtonSurpriseTexture;
 	private Font mMessageFont, mAuthorFont;
 	private TextOptions mTextOptions;
-	private EmoteButton mButtonLove, mButtonJoy;
-	private LinkedList<EmoteButton> mRuneList;
-	private Emote mCurrentEmote; 
-	//private AlphaModifier mMessageModifier;
-
+	private EmoteButton mButtonLove, mButtonJoy, mButtonPeace, mButtonTrust, mButtonAdmiration, mButtonSurprise;
+	private LinkedList<EmoteButton> mEmoteList;
+	private Emote mCurrentEmote;
 			
 	// ===========================================================
 	// Constructors
@@ -120,6 +119,10 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 		
 		mButtonLoveTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mButtonTexture, this, "button_love.png", 336, 0);
 		mButtonJoyTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mButtonTexture, this, "button_joy.png", 336, 250);
+		mButtonPeaceTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mButtonTexture, this, "button_peace.png", 336, 500);
+		mButtonTrustTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mButtonTexture, this, "button_trust.png", 336, 750);
+		mButtonAdmirationTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mButtonTexture, this, "button_admiration.png", 0, 400);
+		mButtonSurpriseTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mButtonTexture, this, "button_surprise.png", 0, 650);
 		mTextOptions = new TextOptions(AutoWrap.WORDS, 320, Text.LEADING_DEFAULT, HorizontalAlign.CENTER);
 		mMessage = new Text(80, 230, mMessageFont, "", 512, mTextOptions, this.getVertexBufferObjectManager());
 		mAuthor = new Text(80, 450, mAuthorFont, "", 256, mTextOptions, this.getVertexBufferObjectManager());
@@ -127,10 +130,11 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 		
 		mGenerator = new HopeGenerator(this, mMessage, mAuthor);
 
-		mRuneList = new LinkedList<EmoteButton>();
+		mEmoteList = new LinkedList<EmoteButton>();
 		
 		mMessage.setBlendFunction(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 		//mMessageModifier= new AlphaModifier(5, 0, 1.0f);
+		
 	}
 
 	@Override
@@ -156,10 +160,22 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 			    		mCurrentEmote = Emote.JOY;
 			    	}
 			    	else if(mCurrentEmote.getLabel().equalsIgnoreCase("joy")) {
+			    		mCurrentEmote = Emote.PEACE;
+			    	}
+			    	else if(mCurrentEmote.getLabel().equalsIgnoreCase("peace")) {
+			    		mCurrentEmote = Emote.TRUST;
+			    	}
+			    	else if(mCurrentEmote.getLabel().equalsIgnoreCase("trust")) {
+			    		mCurrentEmote = Emote.ADMIRATION;
+			    	}
+			    	else if(mCurrentEmote.getLabel().equalsIgnoreCase("admiration")) {
+			    		mCurrentEmote = Emote.SURPRISE;
+			    	}
+			    	else if(mCurrentEmote.getLabel().equalsIgnoreCase("surprise")) {
 			    		mCurrentEmote = Emote.LOVE;
 			    	}
 
-			    	displayRunes(true);
+			    	displaySpheres(true);
 		    		mLabel.setText(mCurrentEmote.getLabel().toUpperCase(Locale.getDefault()));
 			    	mMessage.setText("");
 			    	mAuthor.setText("");
@@ -176,7 +192,7 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 		mScene.attachChild(mAuthor);
 		mScene.attachChild(mLabel);
 		
-		initRunes();
+		initSpheres();
 		
 		mInitialized = false;
 						
@@ -249,7 +265,7 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 			mLastZ = z;
 
 			if(deltaX != deltaY) {
-				displayRunes(false);
+				displaySpheres(false);
 				mGenerator.getHope(mCurrentEmote.getLabel());
 				textModifierReset();
 			}
@@ -276,19 +292,39 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 	 * 			to help managing them.
 	 */
 	@SuppressLint("DefaultLocale")
-	public void initRunes() {
+	public void initSpheres() {
 
 		// Create the EmoteButtons
 		mButtonLove = new EmoteButton(120, 190, "love", mButtonLoveTexture, this.getVertexBufferObjectManager());
 		mScene.attachChild(mButtonLove);
 		mButtonLove.setVisible(false);
-		mRuneList.add(mButtonLove);
+		mEmoteList.add(mButtonLove);
 
 		mButtonJoy = new EmoteButton(120, 190, "joy", mButtonJoyTexture, this.getVertexBufferObjectManager());
 		mScene.attachChild(mButtonJoy);
 		mButtonJoy.setVisible(false);
-		mRuneList.add(mButtonJoy);
+		mEmoteList.add(mButtonJoy);
 
+		mButtonPeace = new EmoteButton(120, 190, "peace", mButtonPeaceTexture, this.getVertexBufferObjectManager());
+		mScene.attachChild(mButtonPeace);
+		mButtonPeace.setVisible(false);
+		mEmoteList.add(mButtonPeace);
+
+		mButtonTrust = new EmoteButton(120, 190, "trust", mButtonTrustTexture, this.getVertexBufferObjectManager());
+		mScene.attachChild(mButtonTrust);
+		mButtonTrust.setVisible(false);
+		mEmoteList.add(mButtonTrust);
+
+		mButtonAdmiration = new EmoteButton(120, 190, "admiration", mButtonAdmirationTexture, this.getVertexBufferObjectManager());
+		mScene.attachChild(mButtonAdmiration);
+		mButtonAdmiration.setVisible(false);
+		mEmoteList.add(mButtonAdmiration);
+
+		mButtonSurprise = new EmoteButton(120, 190, "surprise", mButtonSurpriseTexture, this.getVertexBufferObjectManager());
+		mScene.attachChild(mButtonSurprise);
+		mButtonSurprise.setVisible(false);
+		mEmoteList.add(mButtonSurprise);
+		
 		//Set default emote to Love
 		mButtonLove.setVisible(true);
 		mCurrentEmote = Emote.LOVE;
@@ -296,8 +332,8 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 		
 	}
 	
-	public void displayRunes(boolean visible) {
-		Iterator<EmoteButton> runes = mRuneList.iterator();
+	public void displaySpheres(boolean visible) {
+		Iterator<EmoteButton> runes = mEmoteList.iterator();
 		EmoteButton _emote_b;
 		
 		while(runes.hasNext()) {

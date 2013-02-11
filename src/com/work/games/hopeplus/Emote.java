@@ -2,7 +2,11 @@ package com.work.games.hopeplus;
 
 public enum Emote {
 	LOVE("love"),
-	JOY("joy");
+	JOY("joy"),
+	PEACE("peace"),
+	TRUST("trust"),
+	ADMIRATION("admiration"),
+	SURPRISE("surprise");
 	
 	private String mLabel;
 	

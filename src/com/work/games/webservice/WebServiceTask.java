@@ -62,11 +62,16 @@ public class WebServiceTask extends AsyncTask<Void, Void, String> {
             try {
                 ResponseHandler<String> responseHandler = new BasicResponseHandler();
                 response = httpclient.execute(httppost, responseHandler);
+
                 if(response != null)
                 	return response;
             } catch (ClientProtocolException e) {
-                e.printStackTrace();
-            }
+            	e.printStackTrace();
+            	return "Errant";
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	            return "Errant";
+	        }
         } catch (Throwable t) {
             return t.toString();
         }
@@ -74,22 +79,43 @@ public class WebServiceTask extends AsyncTask<Void, Void, String> {
 	}
 	
 	public String processResponse(String response) {
-        if (response.length() < 1) return "";
-        int scriptFound = response.indexOf("<!--") ;
+
+		// filter errant responses
+		// empty response
+		if (response.length() < 1) return "";
+		
+		// error in sql statements
+		int sqlError = response.indexOf("Errant");
+		int htmlError = response.indexOf("<html>");
+		if(sqlError != -1 || htmlError != -1) {
+			mHopeG.setMessageString("Oops... Something is broken. Please try again later.");
+			mHopeG.setAuthorString("BoostPlus");
+			return "";
+		}
+		
+		// scripts
+        int scriptFound = response.indexOf("<!--");
         if (scriptFound != -1 ) response = response.substring(0, scriptFound) ;
        
-        Document doc = XMLfromString(response);
-        NodeList node_msg = doc.getElementsByTagName("message");
-        NodeList node_author = doc.getElementsByTagName("author");
-        if (node_msg.getLength() > 0) {
-            Node node = node_msg.item(0) ;
-            String message = node.getFirstChild().getNodeValue();
-            mHopeG.setMessageString(message);
-        }
-        if(node_author.getLength() > 0) {
-        	Node node = node_author.item(0);
-        	String author = node.getFirstChild().getNodeValue();
-        	mHopeG.setAuthorString(author);
+        try {
+	        Document doc = XMLfromString(response);
+	        NodeList node_msg = doc.getElementsByTagName("message");
+	        NodeList node_author = doc.getElementsByTagName("author");
+	        if (node_msg.getLength() > 0) {
+	            Node node = node_msg.item(0) ;
+	            String message = node.getFirstChild().getNodeValue();
+	            mHopeG.setMessageString(message);
+	        }
+	        if(node_author.getLength() > 0) {
+	        	Node node = node_author.item(0);
+	        	String author = node.getFirstChild().getNodeValue();
+	        	mHopeG.setAuthorString(author);
+	        }
+        } 
+        catch (Exception e) {
+        	e.printStackTrace();
+			mHopeG.setMessageString("Oops... Something is broken. Please try again later.");
+			mHopeG.setAuthorString("BoostPlus");     	
         }
         return "";
     }

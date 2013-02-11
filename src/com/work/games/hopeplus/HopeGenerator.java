@@ -1,10 +1,13 @@
 package com.work.games.hopeplus;
 
+import java.util.Locale;
+
 import org.andengine.entity.text.Text;
 
 import android.content.Context;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
+import android.util.Log;
 
 import com.work.games.common.NetworkManager;
 import com.work.games.webservice.WebServiceTask;
@@ -27,9 +30,20 @@ public class HopeGenerator implements OnInitListener {
 	}
 	
 	@Override
-	public void onInit(int arg0) {
+	public void onInit(int status) {
 		// TODO Auto-generated method stub
-		
+		if (status == TextToSpeech.SUCCESS) {
+			
+            int result = mTalker.setLanguage(Locale.US);
+            if (result == TextToSpeech.LANG_MISSING_DATA
+            		|| result == TextToSpeech.LANG_NOT_SUPPORTED) {                
+            	Log.e("TTS", "This Language is not supported");
+            } else {
+            	Log.i("TTS", "TTS Engine has been initialized");
+            }
+        } else {
+            Log.e("TTS", "Initilization Failed!");
+        }		
 	}
 	
 	public void close() {
@@ -82,6 +96,9 @@ public class HopeGenerator implements OnInitListener {
 	}
 
 	public void resumeResources() {
+		// close previous tts object
+		if(mTalker != null)
+			mTalker.shutdown();
 		mTalker = new TextToSpeech(mContext, this);
 	}
 }
