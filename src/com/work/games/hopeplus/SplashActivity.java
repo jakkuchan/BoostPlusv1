@@ -102,6 +102,7 @@ public class SplashActivity extends SimpleBaseGameActivity {
 	    		pEvent.getAction() == KeyEvent.ACTION_DOWN) {
 	    		if(mCurrentScene == SETTINGS_SCENE) {
 	    			saveSettingValues();
+	    			mSettingsScene.unregisterTouches();
 	    			mCurrentScene = TITLE_SCENE;
 	    			mEngine.setScene(mTitleScene);
 	    			return true;
@@ -125,7 +126,7 @@ public class SplashActivity extends SimpleBaseGameActivity {
 		float rate = mPref.getFloat("Rate", CommonClass.SPEECH_RATE_L);
 		float pitch = mPref.getFloat("Pitch", CommonClass.PITCH_LVL_M);
 		float sensitivity = mPref.getFloat("Sensitivity", CommonClass.SENSITIVITY_MID);
-		mSettingsScene.setSettings(rate, pitch, sensitivity);
+		mSettingsScene.setSettings(pitch, rate, sensitivity);
 	}
 
 }

@@ -106,7 +106,7 @@ public class SettingsScene extends Scene {
 		};
 		this.registerTouchArea(mRateBtn);
 		
-		mPitchBtn = new TiledSprite(300, 280, mTiledRegion, mVbo) {
+		mPitchBtn = new TiledSprite(300, 280, mTiledRegion.deepCopy(), mVbo) {
 			@Override
 			public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
 				
@@ -134,7 +134,7 @@ public class SettingsScene extends Scene {
 		};
 		this.registerTouchArea(mPitchBtn);
 
-		mSensitivityBtn = new TiledSprite(300, 380, mTiledRegion, mVbo) {
+		mSensitivityBtn = new TiledSprite(300, 380, mTiledRegion.deepCopy(), mVbo) {
 			@Override
 			public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
 				
@@ -222,5 +222,11 @@ public class SettingsScene extends Scene {
 		else if(mSensitivityVal == CommonClass.SENSITIVITY_HIGH) {
 			mSensitivityBtn.setCurrentTileIndex(CommonClass.SETTING_HI);
 		}
+	}
+	
+	public void unregisterTouches() {
+		this.unregisterTouchArea(mSensitivityBtn);
+		this.unregisterTouchArea(mPitchBtn);
+		this.unregisterTouchArea(mRateBtn);
 	}
 }
