@@ -13,9 +13,7 @@ import org.andengine.entity.util.FPSLogger;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.view.KeyEvent;
 
 import com.work.games.common.CommonClass;
@@ -31,7 +29,6 @@ public class SplashActivity extends SimpleBaseGameActivity {
 	private SettingsScene		mSettingsScene;
 	private int					mCurrentScene;
 	private final int			SPLASH_SCENE = 0, TITLE_SCENE = 1, SETTINGS_SCENE = 2; 
-	private SharedPreferences   mPref;
 	
 		
 	@Override
@@ -88,7 +85,7 @@ public class SplashActivity extends SimpleBaseGameActivity {
 
 		// Create Settings Screen Instance
 		mSettingsScene = new SettingsScene(this.mEngine, this, this.getTextureManager(), this.getFontManager(), vbo);
-		loadSettingValues();
+		mSettingsScene.loadSettingValues();
 		
 		mCurrentScene = SPLASH_SCENE;
 		
@@ -101,8 +98,8 @@ public class SplashActivity extends SimpleBaseGameActivity {
 	    if(pKeyCode == KeyEvent.KEYCODE_BACK &&
 	    		pEvent.getAction() == KeyEvent.ACTION_DOWN) {
 	    		if(mCurrentScene == SETTINGS_SCENE) {
-	    			saveSettingValues();
-	    			mSettingsScene.unregisterTouches();
+	    			mSettingsScene.saveSettingValues();
+	    			//mSettingsScene.unregisterTouches();
 	    			mCurrentScene = TITLE_SCENE;
 	    			mEngine.setScene(mTitleScene);
 	    			return true;
@@ -111,22 +108,6 @@ public class SplashActivity extends SimpleBaseGameActivity {
 	    return super.onKeyDown(pKeyCode, pEvent);
 	}
 
-	private void saveSettingValues() {
-		SharedPreferences.Editor editor = mPref.edit();
-		
-		editor.putFloat("Rate", mSettingsScene.getRate());
-		editor.putFloat("Pitch", mSettingsScene.getPitch());
-		editor.putFloat("Sensitivity", mSettingsScene.getSensitivity());
-		editor.commit();	
-	}
-	
-	private void loadSettingValues() {
-		mPref = getSharedPreferences(CommonClass.PREFERENCES_STRING, Context.MODE_PRIVATE);
-		
-		float rate = mPref.getFloat("Rate", CommonClass.SPEECH_RATE_L);
-		float pitch = mPref.getFloat("Pitch", CommonClass.PITCH_LVL_M);
-		float sensitivity = mPref.getFloat("Sensitivity", CommonClass.SENSITIVITY_MID);
-		mSettingsScene.setSettings(pitch, rate, sensitivity);
-	}
+
 
 }

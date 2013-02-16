@@ -1,9 +1,12 @@
 package com.work.games.hopeplus;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Locale;
 
+import org.andengine.audio.music.Music;
+import org.andengine.audio.music.MusicFactory;
 import org.andengine.engine.camera.Camera;
 import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
@@ -14,10 +17,12 @@ import org.andengine.entity.scene.background.SpriteBackground;
 import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.ButtonSprite.OnClickListener;
 import org.andengine.entity.sprite.Sprite;
+import org.andengine.entity.sprite.TiledSprite;
 import org.andengine.entity.text.AutoWrap;
 import org.andengine.entity.text.Text;
 import org.andengine.entity.text.TextOptions;
 import org.andengine.entity.util.FPSLogger;
+import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.font.Font;
 import org.andengine.opengl.font.FontFactory;
 import org.andengine.opengl.texture.ITexture;
@@ -25,6 +30,7 @@ import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.andengine.opengl.texture.region.ITextureRegion;
+import org.andengine.opengl.texture.region.ITiledTextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.util.HorizontalAlign;
@@ -71,14 +77,16 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 	private Emote mCurrentEmote;
 	private SharedPreferences   mPref;
 	private float				mRateVal, mPitchVal, mSensitivityVal;
-			
-	// ===========================================================
-	// Constructors
-	// ===========================================================
-
-	// ===========================================================
-	// Getter & Setter
-	// ===========================================================
+	private Music bgMusic;
+	private SettingsScene mSettingsScene;
+	private ITextureRegion mGearTexture;
+	private ITiledTextureRegion mMusicTexture;
+	private ButtonSprite mGearBtn;
+	private TiledSprite mMusicBtn;
+	private int mCurrentScene;
+	private final int MAIN_SCENE = 0, SETTINGS_SCENE = 1;
+	private int mMusicToggle;
+	private final int TOGGLE_ON = 0, TOGGLE_OFF = 1;
 
 	// ===========================================================
 	// Methods for/from SuperClass/Interfaces
@@ -92,7 +100,9 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		//mSensorManager.registerListener(HopeplusMainActivity.this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 		
-		final EngineOptions mEngineOptions = new EngineOptions(true, ScreenOrientation.PORTRAIT_FIXED, new RatioResolutionPolicy(CommonClass.PORTRAIT_CAMERA_WIDTH, CommonClass.PORTRAIT_CAMERA_HEIGHT), mCamera);				
+		final EngineOptions mEngineOptions = new EngineOptions(true, ScreenOrientation.PORTRAIT_FIXED, new RatioResolutionPolicy(CommonClass.PORTRAIT_CAMERA_WIDTH, CommonClass.PORTRAIT_CAMERA_HEIGHT), mCamera);
+		mEngineOptions.getAudioOptions().setNeedsMusic(true);
+		
 		return mEngineOptions;
 		
 	}
@@ -126,6 +136,8 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 		mButtonTrustTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mButtonTexture, this, "button_trust.png", 336, 750);
 		mButtonAdmirationTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mButtonTexture, this, "button_admiration.png", 0, 400);
 		mButtonSurpriseTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mButtonTexture, this, "button_surprise.png", 0, 650);
+		mGearTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mButtonTexture, this, "gear.png", 0, 900);
+		mMusicTexture = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mButtonTexture, this, "music.png", 0,950, 2, 1);
 		mTextOptions = new TextOptions(AutoWrap.WORDS, 320, Text.LEADING_DEFAULT, HorizontalAlign.CENTER);
 		mMessage = new Text(80, 230, mMessageFont, "", 512, mTextOptions, this.getVertexBufferObjectManager());
 		mAuthor = new Text(80, 450, mAuthorFont, "", 256, mTextOptions, this.getVertexBufferObjectManager());
@@ -134,8 +146,18 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 		// Load setting preferences
 		loadSettingsValues();
 
+		MusicFactory.setAssetBasePath("mfx/");
+		try {
+			bgMusic = MusicFactory.createMusicFromAsset(this.getMusicManager(), this, "DST-FogOfPeace.mp3");
+			bgMusic.setLooping(true);
+		} catch (final IllegalStateException e) {
+			e.printStackTrace();
+		} catch (final IOException e) {
+			e.printStackTrace();
+		}
+		
 		mGenerator = new HopeGenerator(this, mMessage, mAuthor);
-		mGenerator.setTalker(mPitchVal, mRateVal);
+		mGenerator.setTalkerAttributes(mPitchVal, mRateVal);
 		
 		mEmoteList = new LinkedList<EmoteButton>();
 		
@@ -149,7 +171,6 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 		final VertexBufferObjectManager vertexBufferObjectManager = this.getVertexBufferObjectManager();
 
 		this.mEngine.registerUpdateHandler(new FPSLogger());
-		
 		
 		mScene = new Scene();	
 		mScene.setColor(Color.BLACK);
@@ -191,6 +212,10 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 		    }      
 		});
 		
+		// Create Settings Screen Instance
+		mSettingsScene = new SettingsScene(this.mEngine, this, this.getTextureManager(), this.getFontManager(), vertexBufferObjectManager);
+		mSettingsScene.loadSettingValues();
+		
 		mScene.attachChild(mCrystalBall);
 		mScene.registerTouchArea(mCrystalBall);
 		
@@ -201,8 +226,54 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 		mScene.attachChild(mLabel);
 		
 		initSpheres();
+		mGearBtn = new ButtonSprite(410, 20, mGearTexture, vertexBufferObjectManager);
+		mGearBtn.setOnClickListener( new OnClickListener()
+		{
+			public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX, float pTouchAreaLocalY) {
+				if(mCurrentScene != SETTINGS_SCENE) {
+					mEngine.setScene(mSettingsScene);
+					mCurrentScene = SETTINGS_SCENE;
+				}
+			}
+		});
+		mGearBtn.setVisible(true);
+		mGearBtn.setScale(0.75f);
+		mScene.attachChild(mGearBtn);
+		mScene.registerTouchArea(mGearBtn);
+
+		mMusicToggle = TOGGLE_ON;
+		mMusicBtn = new TiledSprite(350, 20, mMusicTexture, vertexBufferObjectManager) {
+			@Override
+			public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
+				
+				switch(pSceneTouchEvent.getAction()) {
+				case TouchEvent.ACTION_UP:
+					if(mMusicToggle == TOGGLE_ON) {
+						mMusicToggle = TOGGLE_OFF;
+						bgMusic.pause();
+						mMusicBtn.setCurrentTileIndex(TOGGLE_OFF);
+					}
+					else {
+						mMusicToggle = TOGGLE_ON;
+						bgMusic.resume();
+						mMusicBtn.setCurrentTileIndex(TOGGLE_ON);
+					}
+					break;
+				default:
+					break;
+				}
+				
+				return true;
+			}
+		};
+		mMusicBtn.setScale(0.75f);
+		mScene.attachChild(mMusicBtn);
+		mScene.registerTouchArea(mMusicBtn);
+		
+		bgMusic.play();
 		
 		mInitialized = false;
+		mCurrentScene = MAIN_SCENE;
 						
 		return mScene;
 	}
@@ -211,7 +282,19 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 	public boolean onKeyDown(final int pKeyCode, final KeyEvent pEvent) {
 	    if(pKeyCode == KeyEvent.KEYCODE_BACK &&
 	    		pEvent.getAction() == KeyEvent.ACTION_DOWN) {
-	    	showExitDialog();
+	    	if(mCurrentScene == MAIN_SCENE) {
+	    		bgMusic.pause();
+	    		showExitDialog();
+	    	}
+	    	else {
+    			mSettingsScene.saveSettingValues();
+    			//mSettingsScene.unregisterTouches();
+	    		mEngine.setScene(mScene);
+	    		mCurrentScene = MAIN_SCENE;
+	    		mGenerator.setTalkerAttributes(mSettingsScene.getPitch(), mSettingsScene.getRate());
+	    		mGenerator.setTalker();
+    			return true;
+	    	}
 	    }
 	    return super.onKeyDown(pKeyCode, pEvent);
 	}
@@ -223,6 +306,7 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						// TODO Auto-generated method stub
+						bgMusic.stop();
 						mGenerator.close();
 						mSensorManager.unregisterListener(HopeplusMainActivity.this);
 						HopeplusMainActivity.this.finish();
@@ -233,6 +317,8 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						// TODO Auto-generated method stub
+						if(!bgMusic.isPlaying())
+							bgMusic.resume();
 						dialog.cancel();
 					}
 				});
@@ -284,6 +370,8 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 	public void onPause() {
 		mSensorManager.unregisterListener(HopeplusMainActivity.this);
 		mGenerator.close();
+		if(bgMusic.isPlaying())
+			bgMusic.pause();
 		super.onPause();
 	}
 	
@@ -291,6 +379,8 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 	public void onResumeGame() {
 		mSensorManager.registerListener(HopeplusMainActivity.this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 		mGenerator.resumeResources();
+		if(!bgMusic.isPlaying())
+			bgMusic.resume();
 		super.onResumeGame();
 	}
 	

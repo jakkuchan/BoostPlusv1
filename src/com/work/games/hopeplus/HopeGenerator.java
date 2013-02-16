@@ -101,12 +101,16 @@ public class HopeGenerator implements OnInitListener {
 		if(mTalker != null)
 			mTalker.shutdown();
 		mTalker = new TextToSpeech(mContext, this);
-		mTalker.setPitch(mPitch);
-		mTalker.setSpeechRate(mRate);
+		setTalker();
 	}
 	
-	public void setTalker(float pPitch, float pRate) {
+	public void setTalkerAttributes(float pPitch, float pRate) {
 		mPitch = pPitch;
 		mRate = pRate;
+	}
+	
+	public void setTalker() {
+		mTalker.setPitch(mPitch);
+		mTalker.setSpeechRate(mRate);
 	}
 }

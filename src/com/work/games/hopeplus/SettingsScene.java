@@ -21,6 +21,7 @@ import org.andengine.opengl.texture.region.ITiledTextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 
 import com.work.games.common.CommonClass;
 
@@ -42,6 +43,8 @@ public class SettingsScene extends Scene {
 	private TextOptions			mTextOptions;
 	private Text				mRateLbl, mPitchLbl, mSensitivityLbl;
 	private float				mRateVal, mPitchVal, mSensitivityVal;
+	private SharedPreferences   mPref;
+
 		
 	public SettingsScene(Engine pEngine, Context pContext, TextureManager pTextureManager, FontManager pFontMgr, VertexBufferObjectManager pVbo) {
 		mEngine = pEngine;
@@ -228,5 +231,23 @@ public class SettingsScene extends Scene {
 		this.unregisterTouchArea(mSensitivityBtn);
 		this.unregisterTouchArea(mPitchBtn);
 		this.unregisterTouchArea(mRateBtn);
+	}
+	
+	public void saveSettingValues() {
+		SharedPreferences.Editor editor = mPref.edit();
+		
+		editor.putFloat("Rate", getRate());
+		editor.putFloat("Pitch", getPitch());
+		editor.putFloat("Sensitivity", getSensitivity());
+		editor.commit();	
+	}
+	
+	public void loadSettingValues() {
+		mPref = mContext.getSharedPreferences(CommonClass.PREFERENCES_STRING, Context.MODE_PRIVATE);
+		
+		float rate = mPref.getFloat("Rate", CommonClass.SPEECH_RATE_L);
+		float pitch = mPref.getFloat("Pitch", CommonClass.PITCH_LVL_M);
+		float sensitivity = mPref.getFloat("Sensitivity", CommonClass.SENSITIVITY_MID);
+		setSettings(pitch, rate, sensitivity);
 	}
 }
