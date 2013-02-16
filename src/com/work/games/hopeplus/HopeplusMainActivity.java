@@ -317,9 +317,11 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						// TODO Auto-generated method stub
-						if(!bgMusic.isPlaying())
-							bgMusic.resume();
-						dialog.cancel();
+						if(mMusicToggle == TOGGLE_ON) {
+							if(!bgMusic.isPlaying())
+								bgMusic.resume();
+							dialog.cancel();
+						}
 					}
 				});
 		
