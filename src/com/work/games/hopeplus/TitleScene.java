@@ -1,3 +1,9 @@
+/*
+ * Copyright Jakkugames 2013
+ * http://jakkugames.host22.com
+ *
+ */
+
 package com.work.games.hopeplus;
 
 import org.andengine.engine.Engine;
