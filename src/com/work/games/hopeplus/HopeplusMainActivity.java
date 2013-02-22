@@ -446,12 +446,13 @@ public class HopeplusMainActivity extends SimpleBaseGameActivity implements Sens
 					_emote_b.setVisible(true);
 			}
 		}
-		
 	}
 
 	protected void textModifierReset() {
-		mMessage.clearEntityModifiers();
-		mMessage.registerEntityModifier(new AlphaModifier(4,0,1.0f));		
+		if(!mGenerator.isTalkerSpeaking()) {
+			mMessage.clearEntityModifiers();
+			mMessage.registerEntityModifier(new AlphaModifier(4,0,1.0f));
+		}
 	}
 	
 	private void loadSettingsValues() {

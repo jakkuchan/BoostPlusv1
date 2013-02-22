@@ -62,6 +62,16 @@ public class CommonClass {
 	public static final int SETTING_LOW = 0;
 	public static final int SETTING_MID = 1;
 	public static final int SETTING_HI = 2;
-
+	
+	/*
+	 * Credits
+	 */
+	public static final String CREDITS_LINES[] = {
+		"Credits",
+		"2D Engine: AndEngine, and AndEngine Community",
+		"Music: www.nosoapradio.us",
+		"Graphics: Jakkuchan",
+		""
+	};
 	
 }

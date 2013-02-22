@@ -89,7 +89,10 @@ public class HopeGenerator implements OnInitListener {
 	}
 	
 	public boolean isTalkerSpeaking() {
-		return mTalker.isSpeaking();
+		if(mTalker != null)
+			return mTalker.isSpeaking();
+		else
+			return false;
 	}
 	
 	public TextToSpeech getTalker() {

@@ -1,10 +1,14 @@
 package com.work.games.hopeplus;
 
 import org.andengine.engine.Engine;
+import org.andengine.engine.handler.timer.ITimerCallback;
+import org.andengine.engine.handler.timer.TimerHandler;
+import org.andengine.entity.modifier.AlphaModifier;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.scene.background.SpriteBackground;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.sprite.TiledSprite;
+import org.andengine.entity.text.AutoWrap;
 import org.andengine.entity.text.Text;
 import org.andengine.entity.text.TextOptions;
 import org.andengine.input.touch.TouchEvent;
@@ -19,9 +23,11 @@ import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegion
 import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.texture.region.ITiledTextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
+import org.andengine.util.HorizontalAlign;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.opengl.GLES20;
 
 import com.work.games.common.CommonClass;
 
@@ -39,12 +45,13 @@ public class SettingsScene extends Scene {
 	private Sprite				mBackgroundSprite;
 	private SpriteBackground	mBackground;
 	private TiledSprite			mRateBtn, mPitchBtn, mSensitivityBtn;
-	private Font 				mTextFont;
-	private TextOptions			mTextOptions;
+	private Font 				mTextFont, mCreditsFont;
+	private TextOptions			mTextOptions, mCreditsOptions;
 	private Text				mRateLbl, mPitchLbl, mSensitivityLbl;
 	private float				mRateVal, mPitchVal, mSensitivityVal;
 	private SharedPreferences   mPref;
-
+	private Text				mCreditsText;
+	private int					mLine;
 		
 	public SettingsScene(Engine pEngine, Context pContext, TextureManager pTextureManager, FontManager pFontMgr, VertexBufferObjectManager pVbo) {
 		mEngine = pEngine;
@@ -73,6 +80,17 @@ public class SettingsScene extends Scene {
 		mTextFont = FontFactory.createFromAsset(mFontManager, requiemFontTexture, mContext.getAssets(), "Requiem.ttf", CommonClass.FONT_SIZE_M, true, android.graphics.Color.rgb(220, 150, 50));
 		mTextFont.load();
 		mTextOptions = new TextOptions();
+
+		final ITexture requiemFontTexture2 = new BitmapTextureAtlas(mTextureManager, 256, 256, TextureOptions.NEAREST);
+		mCreditsFont = FontFactory.createFromAsset(mFontManager, requiemFontTexture2, mContext.getAssets(), "Requiem.ttf", CommonClass.FONT_SIZE_M, true, android.graphics.Color.RED);
+		mCreditsFont.load();
+		mCreditsOptions = new TextOptions(AutoWrap.WORDS, CommonClass.PORTRAIT_CAMERA_WIDTH, Text.LEADING_DEFAULT, HorizontalAlign.CENTER);
+		
+		// Credits Text
+		mCreditsText = new Text(0, 640, mCreditsFont, "", 320, mCreditsOptions, mVbo);
+		mCreditsText.setBlendFunction(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+
+		// Text Labels
 		mRateLbl = new Text(50, 210, mTextFont, "Speech Rate", 20, mTextOptions, mVbo);
 		mPitchLbl = new Text(50, 310, mTextFont, "Pitch", 20, mTextOptions, mVbo);
 		mSensitivityLbl = new Text(50, 410, mTextFont, "Sensitivity", 20, mTextOptions, mVbo);
@@ -164,13 +182,41 @@ public class SettingsScene extends Scene {
 			}
 		};
 		this.registerTouchArea(mSensitivityBtn);
-				
+
+		mLine=0;
+		this.registerUpdateHandler(new TimerHandler(5, new ITimerCallback() {
+			@Override
+			public void onTimePassed(TimerHandler pTimerHandler) {
+			        // TODO Auto-generated method stub
+				pTimerHandler.reset();
+				if(mLine%4 == 0) {
+					mCreditsText.setText(CommonClass.CREDITS_LINES[0]);
+				}
+				else if(mLine%4 == 1) {
+					mCreditsText.setText(CommonClass.CREDITS_LINES[1]);
+				}
+				else if(mLine%4 == 2) {
+					mCreditsText.setText(CommonClass.CREDITS_LINES[2]);
+				}
+				else if(mLine%4 == 3) {
+					mCreditsText.setText(CommonClass.CREDITS_LINES[3]);
+				}
+				mCreditsText.clearEntityModifiers();
+				mCreditsText.registerEntityModifier(new AlphaModifier(4,0,1.0f));			
+				mLine++;
+				if(mLine > 3) mLine = 0;
+			}
+		}));
+		
+		// Attach the objects
+		this.attachChild(mCreditsText);
 		this.attachChild(mRateLbl);
 		this.attachChild(mRateBtn);
 		this.attachChild(mPitchLbl);
 		this.attachChild(mPitchBtn);
 		this.attachChild(mSensitivityLbl);
 		this.attachChild(mSensitivityBtn);
+
 	}
 
 	public void setSettings(float pPitch, float pRate, float pSensitivity) {
@@ -250,4 +296,5 @@ public class SettingsScene extends Scene {
 		float sensitivity = mPref.getFloat("Sensitivity", CommonClass.SENSITIVITY_MID);
 		setSettings(pitch, rate, sensitivity);
 	}
+
 }
